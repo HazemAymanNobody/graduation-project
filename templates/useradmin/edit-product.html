@@ -1,0 +1,171 @@
+{% extends 'useradmin/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block admin_content %}
+{{ form.media }}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">Edit Product</h1>
+                <button type="submit" form="product-form" class="btn btn-success">Update Product</button>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="product-form">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Basic</h5>
+                        
+                        <div class="mb-3">
+                            <label>Product title</label>
+                            {{ form.title }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Full description</label>
+                            {{ form.description }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label>Selling price</label>
+                                {{ form.price }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Old price</label>
+                                {{ form.old_price }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Currency</label>
+                                <select class="form-control">
+                                    <option>USD</option>
+                                    <option>EUR</option>
+                                    <option>GBP</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Type</label>
+                            {{ form.type }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Stock</label>
+                            {{ form.stock_count }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Life of Product</label>
+                            {{ form.life }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Manufactured Date</label>
+                            {{ form.mfd }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Media</h5>
+                        <div class="text-center mb-3">
+                            <div class="image-preview">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" id="preview" class="img-fluid">
+                                {% else %}
+                                    <img src="{% static 'assets/imgs/theme/placeholder.jpg' %}" id="preview" class="img-fluid">
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.image }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Others</h5>
+                        <div class="mb-3">
+                            <label>Category</label>
+                            {{ form.category }}
+                        </div>
+                        <div class="mb-3">
+                            <label>Tags</label>
+                            {{ form.tags }}
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Update Product</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+.image-preview {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.image-preview img {
+    max-width: 200px;
+    height: auto;
+}
+
+.card {
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.card-title {
+    color: #333;
+    font-weight: 500;
+}
+
+.form-control {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+}
+
+.form-control:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 0.2rem rgba(76,175,80,0.25);
+}
+
+.btn-success {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+.btn-success:hover {
+    background-color: #388E3C;
+    border-color: #388E3C;
+}
+</style>
+
+<script>
+document.getElementById('id_image').onchange = function(evt) {
+    const [file] = this.files;
+    if (file) {
+        document.getElementById('preview').src = URL.createObjectURL(file);
+    }
+};
+</script>
+{% endblock %} 

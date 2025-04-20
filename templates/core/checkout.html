@@ -1,0 +1,162 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block content %}
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="{% url 'core:index' %}" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                <span></span> Checkout
+            </div>
+        </div>
+    </div>
+    <div class="container mb-80 mt-50">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="order-items mb-4">
+                    {% for item in order_items %}
+                    <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+                        <img src="{{ item.image }}" alt="{{ item.item }}" class="img-fluid" style="max-width: 100px;">
+                        <div class="ml-3 flex-grow-1">
+                            <h5 class="mb-0">{{ item.item }}</h5>
+                            <div class="d-flex justify-content-between mt-2">
+                                <span>Qty: {{ item.qty }}</span>
+                                <span>Price: ${{ item.price }}</span>
+                                <span>Total: ${{ item.total }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax</span>
+                            <span>$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Shipping</span>
+                            <span>$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Discount</span>
+                            <span id="discount-amount">-$0.00</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between font-weight-bold mb-4">
+                            <span>Total</span>
+                            <span>${{ order.price }}</span>
+                        </div>
+
+                        <!-- Coupon Code Section -->
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="coupon-code" placeholder="Enter Coupon Code...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="button" id="apply-coupon">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Buttons -->
+                        <div class="payment-buttons">
+                            <button class="btn w-100 btn-lg mb-3" style="background-color: #7b2cbf; color: white;" onclick="handleStripePayment()">
+                                Pay With Stripe (Credit or Debit Card)
+                            </button>
+
+                            <button class="btn w-100 btn-lg mb-3" style="background-color: #ffc439;" onclick="handlePayPalPayment()">
+                                <img src="{% static 'assets/imgs/theme/paypal.png' %}" alt="PayPal" height="20"> PayPal
+                            </button>
+
+                            <button class="btn btn-dark w-100 btn-lg" onclick="handleCardPayment()">
+                                <i class="fi-rs-credit-card mr-2"></i> Pay with Card
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const couponInput = document.getElementById('coupon-code');
+    const applyButton = document.getElementById('apply-coupon');
+    const discountAmount = document.getElementById('discount-amount');
+    
+    applyButton.addEventListener('click', function() {
+        const code = couponInput.value.trim();
+        if (!code) {
+            alert('Please enter a coupon code');
+            return;
+        }
+        
+        fetch('/validate-coupon/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ code: code })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.valid) {
+                discountAmount.textContent = `-$${data.discount.toFixed(2)}`;
+                alert(data.message);
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error applying coupon');
+        });
+    });
+});
+
+function handleStripePayment() {
+    fetch(`/api/creat_checkout_session/{{ order.oid }}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            email: '{{ request.user.email }}'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.sessionId) {
+            stripe.redirectToCheckout({ sessionId: data.sessionId });
+        } else {
+            alert('Error creating checkout session');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error processing payment');
+    });
+}
+
+function handlePayPalPayment() {
+    // Redirect to PayPal payment
+    window.location.href = "{% url 'core:payment-completed' order.oid %}";
+}
+
+function handleCardPayment() {
+    // Implement direct card payment logic
+    alert('Direct card payment not implemented yet');
+}
+</script>
+{% endblock %}    
+

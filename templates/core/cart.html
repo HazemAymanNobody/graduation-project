@@ -1,0 +1,251 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block content %}
+
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="{% url 'core:index' %}" rel="nofollow"><i class="fi-rs-home mr-5"></i>Home</a>
+                    <span></span> Cart
+                </div>
+            </div>
+        </div>
+        <section class="mt-50 mb-50">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="row align-items-center">
+                                    <div class="col-2">Product</div>
+                                    <div class="col-3">Title</div>
+                                    <div class="col-2">Unit Price</div>
+                                    <div class="col-2">Quantity</div>
+                                    <div class="col-2">Subtotal</div>
+                                    <div class="col-1">Refresh</div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {% for product_id, item in cart_data.items %}
+                                <div class="row align-items-center border-bottom py-3">
+                                    <div class="col-2">
+                                        <img src="{{ item.image }}" alt="{{ item.title }}" class="img-fluid" style="max-width: 80px;">
+                                    </div>
+                                    <div class="col-3">
+                                        <h6 class="mb-0">{{ item.title }}</h6>
+                                    </div>
+                                    <div class="col-2">
+                                        ${{ item.price }}
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="input-group">
+                                            <input type="number" class="form-control product-qty-{{ product_id }}" value="{{ item.qty }}" min="1">
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        ${% widthratio item.price 1 item.qty %}
+                                    </div>
+                                    <div class="col-1">
+                                        <button class="btn btn-sm update-product" data-product="{{ product_id }}">
+                                            <i class="fi-rs-refresh"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Bio Data Section -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Bio Data</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="fullName" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="fullName" name="full_name" value="{{ request.user.full_name }}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" value="{{ request.user.email }}" required>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="mobile" class="form-label">Mobile</label>
+                                        <input type="tel" class="form-control" id="mobile" name="mobile" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="address" class="form-label">Address</label>
+                                        <input type="text" class="form-control" id="address" name="address" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shipping Details Section -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Shipping Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="city" class="form-label">City</label>
+                                        <input type="text" class="form-control" id="city" name="city" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="state" class="form-label">State</label>
+                                        <input type="text" class="form-control" id="state" name="state" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label for="country" class="form-label">Country</label>
+                                        <select class="form-control" id="country" name="country" required>
+                                            <option value="">Select Country</option>
+                                            <option value="Egypt">Egypt</option>
+                                            <option value="Saudi Arabia">Saudi Arabia</option>
+                                            <option value="UAE">UAE</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Order Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Tax</span>
+                                    <span>${{ tax|default:"0.00" }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Shipping</span>
+                                    <span>${{ shipping|default:"0.00" }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Discount</span>
+                                    <span>-${{ discount|default:"0.00" }}</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between font-weight-bold">
+                                    <span>Total</span>
+                                    <span>${{ cart_total_amount|floatformat:2 }}</span>
+                                </div>
+                                {% if request.user.is_authenticated %}
+                                    <form method="post" action="{% url 'core:cart' %}" id="checkout-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="full_name" id="form_full_name">
+                                        <input type="hidden" name="email" id="form_email">
+                                        <input type="hidden" name="mobile" id="form_mobile">
+                                        <input type="hidden" name="address" id="form_address">
+                                        <input type="hidden" name="city" id="form_city">
+                                        <input type="hidden" name="state" id="form_state">
+                                        <input type="hidden" name="country" id="form_country">
+                                        <button type="submit" class="btn btn-primary btn-lg btn-block mt-4" id="checkout-button">
+                                            Proceed To Checkout
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <a href="{% url 'userauths:sign-in' %}" class="btn btn-primary btn-lg btn-block mt-4">
+                                        Login to Checkout
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update quantity
+        document.querySelectorAll('.update-product').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.product;
+                const qty = document.querySelector(`.product-qty-${productId}`).value;
+                updateQuantity(productId, qty);
+            });
+        });
+
+        function updateQuantity(productId, qty) {
+            fetch(`/update-cart/?id=${productId}&qty=${qty}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.totalcartitems === 0) {
+                        location.reload();
+                    } else {
+                        location.reload();
+                    }
+                });
+        }
+
+        // Checkout form submission
+        const checkoutForm = document.getElementById('checkout-form');
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get values from visible form fields
+                const fullName = document.getElementById('fullName').value;
+                const email = document.getElementById('email').value;
+                const mobile = document.getElementById('mobile').value;
+                const address = document.getElementById('address').value;
+                const city = document.getElementById('city').value;
+                const state = document.getElementById('state').value;
+                const country = document.getElementById('country').value;
+
+                // Validate all required fields
+                const requiredFields = [
+                    { id: 'fullName', value: fullName },
+                    { id: 'email', value: email },
+                    { id: 'mobile', value: mobile },
+                    { id: 'address', value: address },
+                    { id: 'city', value: city },
+                    { id: 'state', value: state },
+                    { id: 'country', value: country }
+                ];
+
+                let isValid = true;
+                requiredFields.forEach(field => {
+                    const input = document.getElementById(field.id);
+                    if (!field.value) {
+                        isValid = false;
+                        input.classList.add('is-invalid');
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                });
+
+                if (!isValid) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+
+                // Set values to hidden form fields
+                document.getElementById('form_full_name').value = fullName;
+                document.getElementById('form_email').value = email;
+                document.getElementById('form_mobile').value = mobile;
+                document.getElementById('form_address').value = address;
+                document.getElementById('form_city').value = city;
+                document.getElementById('form_state').value = state;
+                document.getElementById('form_country').value = country;
+
+                // Submit the form
+                checkoutForm.submit();
+            });
+        }
+    });
+    </script>
+
+{% endblock content %}    

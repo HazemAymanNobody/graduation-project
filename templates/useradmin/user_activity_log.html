@@ -1,0 +1,68 @@
+{% extends 'useradmin/base.html' %}
+
+{% block useradmin_content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">User Activity Log</h5>
+        <a href="{% url 'useradmin:user_detail' user.id %}" class="btn btn-sm btn-secondary">Back to User Details</a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Activity Type</th>
+                        <th>Description</th>
+                        <th>IP Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in activities %}
+                    <tr>
+                        <td>{{ activity.timestamp|date:"M d, Y H:i" }}</td>
+                        <td>{{ activity.activity_type }}</td>
+                        <td>{{ activity.description }}</td>
+                        <td>{{ activity.ip_address|default:"N/A" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No activity logs found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if activities.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if activities.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ activities.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+
+                {% for num in activities.paginator.page_range %}
+                    {% if activities.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if activities.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ activities.next_page_number }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

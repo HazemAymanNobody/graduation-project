@@ -1,0 +1,113 @@
+{% extends 'useradmin/base.html' %}
+
+{% block useradmin_title %}Staff List{% endblock %}
+
+{% block useradmin_content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Staff Members</h5>
+        <div class="input-group" style="width: 300px;">
+            <input type="text" class="form-control" id="searchInput" placeholder="Search staff...">
+            <button class="btn btn-outline-secondary" type="button" id="searchButton">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for staff in staff_members %}
+                    <tr>
+                        <td>{{ staff.username }}</td>
+                        <td>{{ staff.email }}</td>
+                        <td>
+                            {% if staff.role.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ staff.date_joined|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'useradmin:user_detail' staff.id %}" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'useradmin:edit_user_profile' staff.id %}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No staff members found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if staff_members.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if staff_members.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ staff_members.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+
+                {% for num in staff_members.paginator.page_range %}
+                    {% if staff_members.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if staff_members.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ staff_members.next_page_number }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+
+    function performSearch() {
+        const searchTerm = searchInput.value.trim();
+        if (searchTerm) {
+            window.location.href = `{% url 'useradmin:staff_list' %}?search=${encodeURIComponent(searchTerm)}`;
+        }
+    }
+
+    searchButton.addEventListener('click', performSearch);
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %} 

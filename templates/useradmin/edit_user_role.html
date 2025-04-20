@@ -1,0 +1,32 @@
+{% extends 'useradmin/base.html' %}
+
+{% block useradmin_content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Edit User Role</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="role" class="form-label">Role</label>
+                <select class="form-select" id="role" name="role" required>
+                    <option value="customer" {% if role.role == 'customer' %}selected{% endif %}>Customer</option>
+                    <option value="staff" {% if role.role == 'staff' %}selected{% endif %}>Staff</option>
+                    <option value="admin" {% if role.role == 'admin' %}selected{% endif %}>Admin</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="is_active" name="is_active" {% if role.is_active %}checked{% endif %}>
+                    <label class="form-check-label" for="is_active">Active Status</label>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a href="{% url 'useradmin:user_detail' user.id %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

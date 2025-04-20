@@ -1,0 +1,113 @@
+{% extends 'useradmin/base.html' %}
+
+{% block useradmin_title %}Admin List{% endblock %}
+
+{% block useradmin_content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Administrators</h5>
+        <div class="input-group" style="width: 300px;">
+            <input type="text" class="form-control" id="searchInput" placeholder="Search admins...">
+            <button class="btn btn-outline-secondary" type="button" id="searchButton">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for admin in admins %}
+                    <tr>
+                        <td>{{ admin.username }}</td>
+                        <td>{{ admin.email }}</td>
+                        <td>
+                            {% if admin.role.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ admin.date_joined|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'useradmin:user_detail' admin.id %}" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'useradmin:edit_user_profile' admin.id %}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No administrators found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if admins.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if admins.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ admins.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+
+                {% for num in admins.paginator.page_range %}
+                    {% if admins.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if admins.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ admins.next_page_number }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+
+    function performSearch() {
+        const searchTerm = searchInput.value.trim();
+        if (searchTerm) {
+            window.location.href = `{% url 'useradmin:admin_list' %}?search=${encodeURIComponent(searchTerm)}`;
+        }
+    }
+
+    searchButton.addEventListener('click', performSearch);
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %} 

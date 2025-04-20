@@ -1,0 +1,340 @@
+{% extends 'useradmin/base.html' %}
+{% load static %}
+
+{% block admin_content %}
+<div class="products-wrapper">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Products</h2>
+                <p class="text-muted mb-0">Manage your product inventory</p>
+            </div>
+            <a href="{% url 'useradmin:add-product' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i> Add New
+            </a>
+        </div>
+    </div>
+
+    <!-- Products List -->
+    <div class="card">
+        <div class="card-body px-0">
+            <div class="table-responsive">
+                <table class="table product-table mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Product</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th class="text-end pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in all_products %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="product-img">
+                                        {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.title }}">
+                                        {% else %}
+                                        <div class="placeholder-img">
+                                            <i class="bi bi-image"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="product-info ms-3">
+                                        <h6 class="product-title mb-0">{{ product.title }}</h6>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="price">${{ product.price }}</span>
+                            </td>
+                            <td>
+                                <span class="status-badge {% if product.product_status == 'published' %}status-true{% else %}status-false{% endif %}">
+                                    {% if product.product_status == 'published' %}True{% else %}False{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="date">{{ product.date|date:"d M Y" }}</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{% url 'useradmin:edit-product' product.pid %}" class="btn btn-success btn-icon" data-bs-toggle="tooltip" data-bs-title="Edit Product">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="POST" action="{% url 'useradmin:delete-product' product.pid %}" class="d-inline" onsubmit="return confirmDelete('{{ product.title|escapejs }}')">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-light btn-icon" data-bs-toggle="tooltip" data-bs-title="Delete Product">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <div class="empty-state">
+                                    <i class="bi bi-box-seam display-4 text-muted mb-3"></i>
+                                    <h6>No Products Found</h6>
+                                    <p class="text-muted">Start by adding your first product</p>
+                                    <a href="{% url 'useradmin:add-product' %}" class="btn btn-primary">
+                                        <i class="bi bi-plus-lg me-2"></i> Add New
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .products-wrapper {
+        padding: 24px;
+    }
+
+    .page-header h2 {
+        color: #2B3674;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        color: #707EAE;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        background: #4318FF;
+        border-color: #4318FF;
+        font-weight: 500;
+        padding: 8px 16px;
+    }
+
+    .btn-primary:hover {
+        background: #3A16E0;
+        border-color: #3A16E0;
+    }
+
+    .card {
+        background: #FFFFFF;
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Table Styles */
+    .product-table {
+        margin: 0;
+    }
+
+    .product-table thead th {
+        background: transparent;
+        color: #A3AED0;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #E9EDF7;
+        padding: 12px 8px;
+    }
+
+    .product-table tbody td {
+        padding: 16px 8px;
+        border-bottom: 1px solid #E9EDF7;
+        vertical-align: middle;
+    }
+
+    .product-table tbody tr:hover {
+        background-color: #F6F8FD;
+    }
+
+    /* Product Image */
+    .product-img {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .product-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .placeholder-img {
+        width: 100%;
+        height: 100%;
+        background: #F4F7FE;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #A3AED0;
+    }
+
+    /* Product Info */
+    .product-title {
+        color: #2B3674;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .price {
+        color: #2B3674;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .date {
+        color: #8F9BBA;
+        font-size: 14px;
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 12px;
+        border-radius: 40px;
+        font-size: 12px;
+        font-weight: 700;
+        min-width: 80px;
+    }
+
+    .status-true {
+        background: #E6FAF5;
+        color: #01B574;
+    }
+
+    .status-false {
+        background: #F6F8FD;
+        color: #8F9BBA;
+    }
+
+    /* Action Buttons */
+    .btn-icon {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .btn-icon i {
+        font-size: 14px;
+        line-height: 1;
+    }
+
+    .btn-success {
+        background: #05CD99;
+        border-color: #05CD99;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #04B588;
+        border-color: #04B588;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .btn-light {
+        background: #F6F8FD;
+        border-color: #F6F8FD;
+        color: #8F9BBA;
+    }
+
+    .btn-light:hover {
+        background: #E9EDF7;
+        border-color: #E9EDF7;
+        color: #FF5757;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Tooltip customization */
+    .tooltip .tooltip-inner {
+        background-color: #2B3674;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 6px 12px;
+        border-radius: 6px;
+    }
+
+    .tooltip.bs-tooltip-top .tooltip-arrow::before {
+        border-top-color: #2B3674;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 48px;
+        text-align: center;
+    }
+
+    .empty-state h6 {
+        color: #2B3674;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        color: #707EAE;
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .products-wrapper {
+            padding: 16px;
+        }
+
+        .product-table {
+            min-width: 800px;
+        }
+
+        .product-info {
+            max-width: 200px;
+        }
+
+        .product-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+</style>
+
+<script>
+    function confirmDelete(productName) {
+        return confirm(`Are you sure you want to delete "${productName}"?\nThis action cannot be undone.`);
+    }
+
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+            new bootstrap.Tooltip(tooltipTriggerEl, {
+                trigger: 'hover',
+                placement: 'top'
+            });
+        });
+    });
+</script>
+{% endblock %} 
